@@ -1,4 +1,9 @@
-use sdl2::{Sdl, VideoSubsystem, TimerSubsystem, EventPump};
+use core::f64;
+
+use game_state::GameStateT;
+use keyboard::{KeymapT, KeystatesT};
+use player::PlayerT;
+use sdl2::{sys::SDL_KeyCode, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 mod typedefs; mod player; mod game_state; mod keyboard; mod window; mod renderer; mod utils;
 
 ///////////////////////////////// SDL Contextos /////////////////////////////////
@@ -25,46 +30,41 @@ impl SdlContextWrapper {
     }
 }
 
-fn print_sdl_info(sdl_context: &Sdl, _event_pump: &sdl2::EventPump) {
-    // Subsistema de video
-    match sdl_context.video() {
-        Ok(video) => println!("Video Subsystem Initialized: {:?}", video),
-        Err(e) => println!("Failed to initialize Video subsystem: {}", e),
-    }
-
-    // Subsistema timer
-    match sdl_context.timer() {
-        Ok(timer) => println!("Timer Subsystem Initialized: {:?}", timer),
-        Err(e) => println!("Failed to initialize Timer subsystem: {}", e),
-    }
-
-    // Confirmar que el event_pump está disponible
-    println!("Event pump is initialized and active.");
-}
-
 ///////////////////////////////// MAIN /////////////////////////////////
-fn game_loop() {
-    println!("SDL2");
+fn game_loop(mut context: SdlContextWrapper, mut game_state: GameStateT, mut player: PlayerT, mut keymap: KeymapT, mut keystates: KeystatesT){
+    while game_state.is_running {
+        game_state::frame_start(&context.timer_subsystem, &mut game_state);
+        keyboard::handle_events(&mut context.event_pump, &mut keymap, &mut keystates, &mut game_state, &mut player);
+        renderer::render(&player, &game_state);
+        game_state::frame_end(&context.timer_subsystem, &mut game_state);
+    }
 }
 fn main() {
-    // Iniciar instancias de SDL (para usar la biblioteca) ✔
+    let width: u32 = 800;
+    let height: u32 = 600;
+    let target_fps: f64 = 30.0;
+
+    // Iniciar instancias de SDL (para usar la biblioteca)
     let sdl_wrapper: SdlContextWrapper = SdlContextWrapper::init().unwrap();
+    let game_state: game_state::GameStateT = game_state::GameStateT::new(width, height, target_fps);
+    let player: PlayerT = PlayerT::new(40.0, 40.0, (height * 10) as f64, f64::consts::PI/2.0);
 
-    // Keyboard IO ✔
+    // Keyboard IO
+    let keymap: KeymapT = keyboard::KeymapT::new();
+    let keystates: KeystatesT = keyboard::KeystatesT::new();
+
+    // Window & Render init 
+    window::w_init(&sdl_wrapper.video_subsystem, width, height);
+    renderer::r_init(&sdl_wrapper.video_subsystem, &game_state);
 
 
-    // Events handler ✔ 
+    // Canvas & Renderer ✔
+    let mut screen: renderer::Screen = renderer::Screen::new();
+    let mut canvas = screen.init_screen(&sdl_wrapper.video_subsystem, width, height);
+    screen.render(&mut canvas, width, height);
 
-    // Renderer ✔
-    let mut screen = renderer::Screen::new();
-
-    let mut canvas = screen.init_screen(&sdl_wrapper.sdl_context, 800, 600);
-    screen.render(&mut canvas);
-
-    // player
-
-    // rendering context (window)
+    // Player
     
     //print_sdl_info(&sdl_wrapper.sdl_context, &sdl_wrapper.event_pump);
-    //game_loop();
+    game_loop(sdl_wrapper, game_state, player, keymap, keystates);
 }

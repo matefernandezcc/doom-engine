@@ -31,6 +31,23 @@ pub struct KeymapT {
     pub toggle_map: Scancode,
     pub debug_mode: Scancode,
 }
+impl KeymapT {
+    pub fn new() -> Self {
+        KeymapT {
+            forward: Scancode::W,
+            backward: Scancode::S,
+            left: Scancode::A,
+            right: Scancode::D,
+            quit: Scancode::Escape,
+            strafe_left: Scancode::Q,
+            strafe_right: Scancode::E,
+            up: Scancode::Space,
+            down: Scancode::LCtrl,
+            toggle_map: Scancode::M,
+            debug_mode: Scancode::O,
+        }
+    }
+}
 
 pub struct KeystatesT {
     pub forward: bool,
@@ -44,6 +61,22 @@ pub struct KeystatesT {
     pub map_state: bool,
     pub is_debug: bool,
 }
+impl KeystatesT {
+    pub fn new() -> Self {
+        KeystatesT {
+            forward: false,
+            backward: false,
+            left: false,
+            right: false,
+            strafe_left: false,
+            strafe_right: false,
+            up: false,
+            down: false,
+            map_state: false,
+            is_debug: false,
+        }
+    }
+}
 
 #[derive(PartialEq)] // Esto es para poder usar el operador binario '==' con el enum
 pub enum KbdKeyState {
@@ -53,35 +86,6 @@ pub enum KbdKeyState {
 
 
 ///////////////////////////////// FUNCIONES /////////////////////////////////
-// Mapeo de teclas
-pub fn k_init_keymap(keymap: &mut KeymapT, keystates: &mut KeystatesT) {
-    *keymap = KeymapT {
-        forward: Scancode::W,
-        backward: Scancode::S,
-        left: Scancode::A,
-        right: Scancode::D,
-        quit: Scancode::Escape,
-        strafe_left: Scancode::Q,
-        strafe_right: Scancode::E,
-        up: Scancode::Space,
-        down: Scancode::LCtrl,
-        toggle_map: Scancode::M,
-        debug_mode: Scancode::O,
-    };
-
-    *keystates = KeystatesT {
-        forward: false,
-        backward: false,
-        left: false,
-        right: false,
-        strafe_left: false,
-        strafe_right: false,
-        up: false,
-        down: false,
-        map_state: false,
-        is_debug: false,
-    };
-}
 
 // Procesar el estado de las teclas (actualiza el estado de 'KeystatesT')
 pub fn k_process_keystates( 
@@ -165,7 +169,7 @@ pub fn k_handle_realtimekeys(
 }
 
 // Manejar Eventos del teclado
-pub fn k_handle_events(
+pub fn handle_events(
     event_pump: &mut EventPump,
     keymap: &mut KeymapT, 
     keystates: &mut KeystatesT, 
