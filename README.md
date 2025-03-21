@@ -15,7 +15,7 @@ Based on the video made by [The Old School Coder](https://www.youtube.com/watch?
 
 
 ## 📖 How to use
-
+ 
 ##### 1) Install SDL2 
 
 - [SDL2 Crate v0.37.0](https://crates.io/crates/sdl2)

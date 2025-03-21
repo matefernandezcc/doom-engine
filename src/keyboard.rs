@@ -10,7 +10,7 @@ pub struct SpeedT {
 }
 impl SpeedT {
     pub fn new() -> Self {
-        SpeedT {
+        SpeedT { 
             mov_speed: 150.0,
             elevation_speed: (500*100) as f64,
             rot_speed: 4.0,

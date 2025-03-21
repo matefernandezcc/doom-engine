@@ -15,7 +15,7 @@ endif
 SRC=src/main.rs
 INCLUDE=./libs/$(SDL_PLATFORM_DIR)/include
 LIB=./libs/$(SDL_PLATFORM_DIR)/lib
-
+ 
 all:
 	cargo rustc --release -- -L $(LIB) -l SDL2
 

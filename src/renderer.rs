@@ -10,7 +10,7 @@ pub struct RPlaneT {
 
 pub struct WallT {
     pub a: typedefs::Vec2T,
-    pub b: typedefs::Vec2T,
+    pub b: typedefs::Vec2T, 
     pub portal_top_height: f64,
     pub portal_bot_height: f64,
     pub is_portal: bool,

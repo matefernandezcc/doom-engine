@@ -8,3 +8,4 @@ pub fn w_init(video_subsystem: &VideoSubsystem, winw: u32, winh: u32) {
         .build()
         .unwrap();
 }
+ 

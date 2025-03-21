@@ -15,7 +15,7 @@ pub struct GameStateT {
     pub is_debug_mode: bool,
 }
 
-///////////////////////////////// FUNCIONES /////////////////////////////////
+///////////////////////////////// FUNCIONES ///////////////////////////////// 
 pub fn g_init(scrnw: u32, scrnh: u32, target_fps: i32) -> GameStateT {
     let game_state: GameStateT = GameStateT {
         frame_start: 0,

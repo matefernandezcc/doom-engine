@@ -53,8 +53,7 @@ fn main() {
     // Keyboard IO ✔
 
 
-    // Events handler ✔
-
+    // Events handler ✔ 
 
     // Renderer ✔
     let mut screen = renderer::Screen::new();
