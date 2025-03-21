@@ -1,6 +1,6 @@
 ![Doom Image](./assets/doom.webp)
 ---
-Engine made using SDL2.
+Engine made using SDL2 v0.37.0.
 
 # Doom Engine in Rust 🦀
 I started this project in order to learn Rust, so I'm probably not using the best practices and recommendations for the language.
@@ -18,8 +18,8 @@ Based on the video made by [The Old School Coder](https://www.youtube.com/watch?
 
 ##### 1) Install SDL2 
 
-- [Rust-SDL2 Crate](https://crates.io/crates/sdl2)
-- [Rust-SDL2 Docs](https://rust-sdl2.github.io/rust-sdl2/sdl2/)
+- [SDL2 Crate v0.37.0](https://crates.io/crates/sdl2)
+- [Rust-SDL2 Documentation](https://rust-sdl2.github.io/rust-sdl2/sdl2/)
 
 ```bash
 # Linux
