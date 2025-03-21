@@ -1,13 +1,15 @@
-use sdl2::{video::{Window, WindowContext}, VideoSubsystem, render::{Canvas, Texture, TextureCreator}, pixels::PixelFormatEnum, Sdl};
-use crate::{game_state, player, typedefs, utils, window};
+use sdl2::{video::{Window, WindowContext}, VideoSubsystem, render::{Canvas, Texture, TextureCreator}, pixels::PixelFormatEnum};
+use crate::{game_state, player, typedefs};
 
 
 ///////////////////////////////// STRUCTS /////////////////////////////////
+#[derive(Clone)]
 pub struct RPlaneT {
     pub t: [i32; 1024],
     pub b: [i32; 1024],
 }
 
+#[derive(Clone)]
 pub struct WallT {
     pub a: typedefs::Vec2T,
     pub b: typedefs::Vec2T, 
@@ -15,10 +17,22 @@ pub struct WallT {
     pub portal_bot_height: f64,
     pub is_portal: bool,
 }
+    impl WallT {
+        pub fn new(x1:f64, y1:f64, x2:f64, y2:f64, portal_top_height:f64, portal_bot_height:f64, is_portal:bool) -> Self {
+            WallT { 
+                a: typedefs::Vec2T::new(x1,y1), 
+                b: typedefs::Vec2T::new(x2,y2),
+                portal_top_height: portal_top_height, 
+                portal_bot_height: portal_bot_height, 
+                is_portal: is_portal,
+            }
+        }
+    }
 
+#[derive(Clone)]
 pub struct SectorT {
     pub id: i32,
-    pub walls: [WallT; 10],
+    pub walls: Vec<WallT>,
     pub num_walls: i32,
     pub height: i32,
     pub elevation: i32,
@@ -32,6 +46,33 @@ pub struct SectorT {
     pub floorx_ylut: RPlaneT,
     pub ceilx_ylut: RPlaneT,
 }
+    impl SectorT {
+        pub fn new(height: i32, elevation: i32, color: u32, ceil_clr: u32, floor_clr: u32) -> Self {
+            SectorT {
+                id: 0,
+                walls: Vec::new(),  // Vec para manejar un número dinámico de paredes
+                num_walls: 0,
+                height,
+                elevation,
+                dist: 0.0,
+                color,
+                floor_clr,
+                ceil_clr,
+    
+                portals_floorx_ylut: RPlaneT { t: [0; 1024], b: [0; 1024] },
+                portals_ceilx_ylut: RPlaneT { t: [0; 1024], b: [0; 1024] },
+                floorx_ylut: RPlaneT { t: [0; 1024], b: [0; 1024] },
+                ceilx_ylut: RPlaneT { t: [0; 1024], b: [0; 1024] },
+            }
+        }
+
+        pub fn add_wall(&mut self, wall: WallT) {
+            if self.num_walls < 10 {
+                self.walls[self.num_walls as usize] = wall;
+                self.num_walls += 1;
+            }
+        }
+    }
 
 pub struct SectorsQueueT {
     pub sectors: [SectorT; 1024],
@@ -90,14 +131,13 @@ impl Screen {
             }
         }
     }
-
     fn shutdown(&self) {
         eprintln!("Shutting down screen resources.");
     }
 }
 
 ///////////////////////////////// FUNCIONES  /////////////////////////////////
-pub fn r_init(video_subsystem: &VideoSubsystem, game_state: &game_state::GameStateT) {
+pub fn init(video_subsystem: &VideoSubsystem, game_state: &game_state::GameStateT) {
     let scrnw: u32 = game_state.scrn_w / 2;
     let scrnh: u32 = game_state.scrn_h / 2;
 
@@ -111,32 +151,67 @@ pub fn r_init(video_subsystem: &VideoSubsystem, game_state: &game_state::GameSta
     }
 }
 
-pub fn r_update_screen(canvas: &mut Canvas<Window>, texture: &mut Texture, screen_buffer: &[u8], width: u32, height: u32) {
-    let pitch = (width * 4) as usize;  // Asumimos que estamos usando 4 bytes por píxel (por ejemplo, RGBA32)
+pub fn update_screen(canvas: &mut Canvas<Window>, texture: &mut Texture, screen_buffer: &[u8], width: u32) {
+    let pitch = (width * 4) as usize;  // 4 bytes por píxel (RGBA32)
     
     // Llamamos a `update` en la textura para actualizar con los nuevos datos
     if let Err(e) = texture.update(None, screen_buffer, pitch) {
         eprintln!("Error al actualizar la textura: {}", e);
     }
 
-    // Luego, copiamos la textura al canvas y la presentamos
+    // Copiamos la textura al canvas y la presentamos
     canvas.copy(&texture, None, None).unwrap();
     canvas.present();
 }
 
 pub fn render(player: &player::PlayerT, game_state: &game_state::GameStateT){
     let is_debug_mode = game_state.is_debug_mode;
-    r_update_screen(canvas, texture, screen_buffer, width, height);
+    //update_screen(canvas, texture, screen_buffer, width, height);
 }
 
-//pub fn r_draw_walls(player: &player::PlayerT, game_state: &game_state::GameStateT){}
+pub fn draw_walls(game_state: &game_state::GameStateT, canvas: &mut Canvas<Window>) {
+    if !game_state.sectors.is_empty() {
+        // Iterar sobre cada sector
+        for sector in &game_state.sectors {
+            // Iterar sobre las paredes de cada sector
+            for wall in &sector.walls {
+                // Calcular la proyección de las paredes en la pantalla
+                // Para la simplicidad, consideramos que las paredes son líneas
+                let x1 = wall.a.x as i32;
+                let y1 = wall.a.y as i32;
+                let x2 = wall.b.x as i32;
+                let y2 = wall.b.y as i32;
+                
+                // Dibujar la pared
+                canvas.set_draw_color(sdl2::pixels::Color::RGB(255, 255, 255)); // Blanco para las paredes
+                if let Err(e) = canvas.draw_line((x1, y1), (x2, y2)) {
+                    eprintln!("Error al dibujar la línea: {}", e);
+                }
+            }
+        }
+    } else {
+        eprintln!("No hay sectores en el game state");
+    }
+}
 
-//pub fn r_create_sector(height: i32, elevation: i32, color: u32, ceil_clr: u32, floor_clr: u32) -> SectorT{}
+pub fn sector_add_wall(sector: &mut SectorT, wall: WallT) {
+    // Añadir la pared a la lista de paredes del sector
+    sector.add_wall(wall);
+}
 
-//pub fn r_sector_add_wall(sector: &SectorT, vertices: WallT){}
+pub fn add_sector_to_queue(sector: &mut SectorT, sectors_queue: &mut SectorsQueueT) {
+    if sectors_queue.num_sectors < 1024 {
+        sectors_queue.sectors[sectors_queue.num_sectors as usize] = sector.clone();
+        sectors_queue.num_sectors += 1;
+    } else {
+        eprintln!("La cola de sectores está llena");
+    }
+}
 
-//pub fn r_add_sector_to_queue(sector: &SectorT){}
+pub fn create_wall(ax: f64, ay: f64, bx: f64, by: f64, portal_top_height: f64, portal_bot_height: f64, is_portal: bool) -> WallT {
+    WallT::new(ax, ay, bx, by, portal_top_height, portal_bot_height, is_portal)
+}
 
-//pub fn r_create_wall(ax: i32, ay: i32, bx: i32, by: i32) -> WallT{}
-
-//pub fn r_create_portal(ax: i32, ay: i32, bx: i32, by: i32, th:i32, bh:i32) -> WallT{}
+pub fn create_portal(ax: i32, ay: i32, bx: i32, by: i32, top_height: i32, bot_height: i32) -> WallT {
+    WallT::new(ax as f64, ay as f64, bx as f64, by as f64, top_height as f64, bot_height as f64, true)
+}

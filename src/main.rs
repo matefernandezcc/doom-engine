@@ -1,10 +1,10 @@
+mod typedefs; mod player; mod game_state; mod keyboard; mod window; mod renderer; mod utils;
 use core::f64;
-
+use player::PlayerT;
 use game_state::GameStateT;
 use keyboard::{KeymapT, KeystatesT};
-use player::PlayerT;
-use sdl2::{sys::SDL_KeyCode, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
-mod typedefs; mod player; mod game_state; mod keyboard; mod window; mod renderer; mod utils;
+use renderer::{SectorT, WallT};
+use sdl2::{EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 
 ///////////////////////////////// SDL Contextos /////////////////////////////////
 pub struct SdlContextWrapper {
@@ -31,18 +31,21 @@ impl SdlContextWrapper {
 }
 
 ///////////////////////////////// MAIN /////////////////////////////////
-fn game_loop(mut context: SdlContextWrapper, mut game_state: GameStateT, mut player: PlayerT, mut keymap: KeymapT, mut keystates: KeystatesT){
+fn game_loop(mut context: SdlContextWrapper, mut game_state: GameStateT, mut player: PlayerT, mut keymap: KeymapT, mut keystates: KeystatesT, w:u32, h:u32){
+    let mut screen: renderer::Screen = renderer::Screen::new();
+    let mut canvas = screen.init_screen(&context.video_subsystem, w, h);
     while game_state.is_running {
         game_state::frame_start(&context.timer_subsystem, &mut game_state);
         keyboard::handle_events(&mut context.event_pump, &mut keymap, &mut keystates, &mut game_state, &mut player);
-        renderer::render(&player, &game_state);
+        screen.render(&mut canvas, w, h);
+        //renderer::render(&player, &game_state);
         game_state::frame_end(&context.timer_subsystem, &mut game_state);
     }
 }
 fn main() {
-    let width: u32 = 800;
-    let height: u32 = 600;
-    let target_fps: f64 = 30.0;
+    let width: u32 = 1024;
+    let height: u32 = 768;
+    let target_fps: f64 = 120.0;
 
     // Iniciar instancias de SDL (para usar la biblioteca)
     let sdl_wrapper: SdlContextWrapper = SdlContextWrapper::init().unwrap();
@@ -54,17 +57,13 @@ fn main() {
     let keystates: KeystatesT = keyboard::KeystatesT::new();
 
     // Window & Render init 
-    window::w_init(&sdl_wrapper.video_subsystem, width, height);
-    renderer::r_init(&sdl_wrapper.video_subsystem, &game_state);
+    window::init(&sdl_wrapper.video_subsystem, width, height);
+    renderer::init(&sdl_wrapper.video_subsystem, &game_state);
 
-
-    // Canvas & Renderer ✔
-    let mut screen: renderer::Screen = renderer::Screen::new();
-    let mut canvas = screen.init_screen(&sdl_wrapper.video_subsystem, width, height);
-    screen.render(&mut canvas, width, height);
-
-    // Player
+    // Sectores 
+    let mut s1: SectorT = SectorT::new(10, 5, 0xFF00FF, 0x0000FF, 0x00FF00);
+    let wall1 = WallT::new(0.0, 0.0, 10.0, 0.0, 5.0, 10.0, false);
+    let wall2 = WallT::new(10.0, 0.0, 10.0, 10.0, 5.0, 10.0, false);
     
-    //print_sdl_info(&sdl_wrapper.sdl_context, &sdl_wrapper.event_pump);
-    game_loop(sdl_wrapper, game_state, player, keymap, keystates);
+    game_loop(sdl_wrapper, game_state, player, keymap, keystates, width, height);
 }

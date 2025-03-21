@@ -1,4 +1,5 @@
 use sdl2::TimerSubsystem;
+use crate::renderer::SectorT;
 
 ///////////////////////////////// STRUCTS /////////////////////////////////
 pub struct GameStateT {
@@ -13,26 +14,26 @@ pub struct GameStateT {
     pub is_fps_capped: bool,
     pub state_show_map: bool,
     pub is_debug_mode: bool,
+    pub sectors: Vec<SectorT>,
 }
-
-impl GameStateT {
-    // Constructor que inicializa un nuevo GameStateT
-    pub fn new(scrnw: u32, scrnh: u32, target_fps: f64) -> Self {
-        GameStateT {
-            frame_start: 0,
-            scrn_w: scrnw,
-            scrn_h: scrnh,
-            target_fps: target_fps as f64,
-            target_frame_time: 1.0 / target_fps as f64,
-            delta_time: 1.0 / target_fps as f64,
-            is_running: true,
-            is_paused: false,
-            is_fps_capped: false,
-            state_show_map: false,
-            is_debug_mode: false,
+    impl GameStateT {
+        pub fn new(scrnw: u32, scrnh: u32, target_fps: f64) -> Self {
+            GameStateT {
+                frame_start: 0,
+                scrn_w: scrnw,
+                scrn_h: scrnh,
+                target_fps: target_fps as f64,
+                target_frame_time: 1.0 / target_fps as f64,
+                delta_time: 1.0 / target_fps as f64,
+                is_running: true,
+                is_paused: false,
+                is_fps_capped: false,
+                state_show_map: false,
+                is_debug_mode: false,
+                sectors: Vec::new(),
+            }
         }
     }
-}
 
 
 ///////////////////////////////// FUNCIONES ///////////////////////////////// 

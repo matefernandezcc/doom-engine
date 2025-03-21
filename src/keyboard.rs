@@ -1,6 +1,6 @@
 use core::f64;
-use sdl2::{event::Event, keyboard::{Scancode, Keycode}, EventPump};
-use crate::{game_state, player::{self, PlayerT}};
+use sdl2::{event::Event, keyboard::Scancode, EventPump};
+use crate::{game_state, player};
 
 // Velocidades predeterminadas
 pub struct SpeedT {
@@ -31,23 +31,23 @@ pub struct KeymapT {
     pub toggle_map: Scancode,
     pub debug_mode: Scancode,
 }
-impl KeymapT {
-    pub fn new() -> Self {
-        KeymapT {
-            forward: Scancode::W,
-            backward: Scancode::S,
-            left: Scancode::A,
-            right: Scancode::D,
-            quit: Scancode::Escape,
-            strafe_left: Scancode::Q,
-            strafe_right: Scancode::E,
-            up: Scancode::Space,
-            down: Scancode::LCtrl,
-            toggle_map: Scancode::M,
-            debug_mode: Scancode::O,
+    impl KeymapT {
+        pub fn new() -> Self {
+            KeymapT {
+                forward: Scancode::W,
+                backward: Scancode::S,
+                left: Scancode::A,
+                right: Scancode::D,
+                quit: Scancode::Escape,
+                strafe_left: Scancode::Q,
+                strafe_right: Scancode::E,
+                up: Scancode::Space,
+                down: Scancode::LCtrl,
+                toggle_map: Scancode::M,
+                debug_mode: Scancode::O,
+            }
         }
     }
-}
 
 pub struct KeystatesT {
     pub forward: bool,
@@ -61,22 +61,22 @@ pub struct KeystatesT {
     pub map_state: bool,
     pub is_debug: bool,
 }
-impl KeystatesT {
-    pub fn new() -> Self {
-        KeystatesT {
-            forward: false,
-            backward: false,
-            left: false,
-            right: false,
-            strafe_left: false,
-            strafe_right: false,
-            up: false,
-            down: false,
-            map_state: false,
-            is_debug: false,
+    impl KeystatesT {
+        pub fn new() -> Self {
+            KeystatesT {
+                forward: false,
+                backward: false,
+                left: false,
+                right: false,
+                strafe_left: false,
+                strafe_right: false,
+                up: false,
+                down: false,
+                map_state: false,
+                is_debug: false,
+            }
         }
     }
-}
 
 #[derive(PartialEq)] // Esto es para poder usar el operador binario '==' con el enum
 pub enum KbdKeyState {
@@ -88,7 +88,7 @@ pub enum KbdKeyState {
 ///////////////////////////////// FUNCIONES /////////////////////////////////
 
 // Procesar el estado de las teclas (actualiza el estado de 'KeystatesT')
-pub fn k_process_keystates( 
+pub fn process_keystates( 
     keystates: &mut KeystatesT,
     player: &mut player::PlayerT,
     delta_time: f64
@@ -133,7 +133,7 @@ pub fn k_process_keystates(
 }
 
 // Manejar las teclas en tiempo real (presionar o soltar)
-pub fn k_handle_realtimekeys(
+pub fn handle_realtimekeys(
     keymap: &mut KeymapT,
     keystates: &mut KeystatesT,
     key_scancode: &Scancode,
@@ -180,7 +180,7 @@ pub fn handle_events(
         match event {
             // Evento KeyDown
             Event::KeyDown { scancode: Some(scancode), .. } => {
-                k_handle_realtimekeys(keymap, keystates,&scancode, KbdKeyState::Down);
+                handle_realtimekeys(keymap, keystates,&scancode, KbdKeyState::Down);
                 game_state.state_show_map = keystates.map_state;
                 
                 if scancode == keymap.quit {
@@ -195,7 +195,7 @@ pub fn handle_events(
 
             // Evento KeyUp
             Event::KeyUp { scancode: Some(scancode), .. } => {
-                k_handle_realtimekeys(keymap, keystates,&scancode, KbdKeyState::Up);
+                handle_realtimekeys(keymap, keystates,&scancode, KbdKeyState::Up);
                 break;
             }
 
@@ -206,5 +206,5 @@ pub fn handle_events(
             _ => {break;}
         }
     }
-    k_process_keystates(keystates, player, game_state.delta_time);
+    process_keystates(keystates, player, game_state.delta_time);
 }
