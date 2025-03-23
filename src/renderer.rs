@@ -34,7 +34,7 @@ pub struct SectorT {
     pub id: i32,
     pub walls: Vec<WallT>,
     pub num_walls: i32,
-    pub height: i32,
+    pub height: i32, 
     pub elevation: i32,
     pub dist: f64,
     pub color: u32,
